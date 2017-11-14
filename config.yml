@@ -1,0 +1,16 @@
+sources:
+  amqp: # create an amqp source called "inputstream"
+    - name: inputstream
+      host: localhost:5672
+      channel: test
+      durable: true
+  stdin: true # enable the special "stdin" source
+
+endpoints:
+  appendlog: # create an appendlog endpoint called "outfile"
+    - name: outfile
+      path: ./appendlog.log
+
+triggers:
+  - when: stdin
+    do: outfile
