@@ -1,5 +1,7 @@
 package singlenode
 
+import "github.com/KernelDeimos/sofe4790/configobjects"
+
 type Config struct {
 	Sources   ConfigSources   `yaml:"sources"`
 	Endpoints ConfigEndpoints `yaml:"endpoints"`
@@ -12,6 +14,7 @@ type ConfigSources struct {
 
 type ConfigEndpoints struct {
 	Appendlog []ConfigEndAppendLog `yaml:"appendlog"`
+	Tweet     []ConfigEndTweet     `yaml:"tweet"`
 }
 
 /*
@@ -27,6 +30,11 @@ func (confEnd ConfigEnd) GetName() string {
 type ConfigEndAppendLog struct {
 	Name string `yaml:"name"`
 	Path string `yaml:"path"`
+}
+
+type ConfigEndTweet struct {
+	Name string              `yaml:"name"`
+	Auth configobjects.OAuth `yaml:"auth"`
 }
 
 type ConfigTrigger struct {

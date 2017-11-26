@@ -72,6 +72,11 @@ func (builder *ApplicationBuilder) buildEndpoints(endpoints map[string]Endpoint)
 		end := NewStreamEndpoint(item.Path)
 		endpoints[item.Name] = end
 	}
+	for _, item := range c.Endpoints.Tweet {
+		logrus.Infof("Adding endpoint '%s'", item.Name)
+		end := NewTweetEndpoint(item.Auth)
+		endpoints[item.Name] = end
+	}
 }
 
 func (builder *ApplicationBuilder) attachTriggers(
