@@ -4,8 +4,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/davecgh/go-spew/spew"
-
 	"github.com/KernelDeimos/sofe4790/configobjects"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
@@ -69,8 +67,7 @@ func (end *TweetEndpoint) Catch(source string, data map[string]string) {
 
 	logrus.Debug("Writing data to twitter: ", payload)
 
-	_, resp, err := end.client.Statuses.Update(payload, nil)
-	spew.Dump(resp)
+	_, _, err := end.client.Statuses.Update(payload, nil)
 	if err != nil {
 		logrus.Error(err)
 	}
