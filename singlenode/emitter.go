@@ -30,25 +30,30 @@ func (trigger *EndpointTrigger) Invoke(e *Emitter, ev Event) {
 }
 
 type Emitter struct {
-	triggers map[string]Trigger
+	triggers map[string][]Trigger
 }
 
 func NewEmitter() *Emitter {
 	return &Emitter{
-		map[string]Trigger{},
+		map[string][]Trigger{},
 	}
 }
 
 func (e *Emitter) Emit(ev Event) {
 	logrus.Debugf("Emitting event from '%s'", ev.Key)
-	for key, trig := range e.triggers {
-		if key == ev.Key {
-			logrus.Debugf("Found trigger for '%s'", ev.Key)
+	if trigList, exists := e.triggers[ev.Key]; exists {
+		logrus.Debugf("%d triggers for '%s'", len(trigList), ev.Key)
+		for _, trig := range trigList {
 			trig.Invoke(e, ev)
 		}
+	} else {
+		logrus.Debugf("No trigger for '%s'", ev.Key)
 	}
 }
 
 func (e *Emitter) AddTrigger(key string, trig Trigger) {
-	e.triggers[key] = trig
+	if _, exists := e.triggers[key]; !exists {
+		e.triggers[key] = []Trigger{}
+	}
+	e.triggers[key] = append(e.triggers[key], trig)
 }
