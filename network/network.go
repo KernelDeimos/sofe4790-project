@@ -8,11 +8,14 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 const (
 	MessageTypeElection    = "_elect"
-	MessageTypeCoordinator = "_elect"
+	MessageTypeCoordinator = "_coord"
 )
 
 type Network struct {
@@ -20,6 +23,21 @@ type Network struct {
 	ElectionState bool
 	Peers         []NetworkPeer
 	Timeout       time.Duration
+}
+
+func NewDefaultNetwork(host string, id, port int, leader bool) *Network {
+	self := NetworkPeer{}
+	self.Host = host
+	self.Identifier = id
+	self.Port = port
+	self.IsLeader = leader
+
+	return &Network{
+		Self:          self,
+		ElectionState: false,
+		Peers:         []NetworkPeer{},
+		Timeout:       time.Second * 10,
+	}
 }
 
 func (n *Network) StartElection() {
@@ -59,6 +77,20 @@ func (n *Network) StartElection() {
 		}
 	}
 
+}
+
+func (n *Network) Attach(r *gin.Engine) {
+	r.GET("/:type/:data", func(c *gin.Context) {
+		logrus.Infof("Received message of type %s\n", c.Param("type"))
+		switch c.Param("type") {
+		case MessageTypeElection:
+			c.JSON(http.StatusOK, struct {
+				Status string `json:"status"`
+			}{"okay"})
+		case MessageTypeCoordinator:
+			//
+		}
+	})
 }
 
 type NetworkPeer struct {

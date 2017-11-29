@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"sync"
 
+	"github.com/KernelDeimos/sofe4790/network"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
@@ -114,17 +115,11 @@ func RunApplication() {
 	builder := ApplicationBuilder{&config}
 	app := builder.Build()
 
-	app.Start()
-
 	r := gin.Default()
+	n := network.NewDefaultNetwork("127.0.0.1", 1, 21337, false)
+	n.Attach(r)
 
-	r.GET("/_event/:data", func(c *gin.Context) {
-		//
-	})
-
-	r.GET("/_elect/:type/:message", func(c *gin.Context) {
-		//
-	})
+	app.Start()
 
 	r.Run(":21337")
 }
