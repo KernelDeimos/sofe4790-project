@@ -6,8 +6,64 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
 	"time"
 )
+
+const (
+	MessageTypeElection    = "_elect"
+	MessageTypeCoordinator = "_elect"
+)
+
+type Network struct {
+	Self          NetworkPeer
+	ElectionState bool
+	Peers         []NetworkPeer
+	Timeout       time.Duration
+}
+
+func (n *Network) StartElection() {
+	n.ElectionState = true
+
+	wg := &sync.WaitGroup{}
+	anyAnswers := false
+
+	// Clear the IsLeader attribute of any nodes who are currently a leader
+	for _, peer := range n.Peers {
+		peer.IsLeader = false
+	}
+
+	// Send an election message to all nodes with a higher identifier
+	for _, peer := range n.Peers {
+		go func() {
+			if peer.Identifier > n.Self.Identifier {
+				_, err := peer.Send(MessageTypeElection, "", n.Timeout)
+				if err == nil {
+					anyAnswers = true
+				}
+				wg.Done()
+			}
+		}()
+	}
+
+	// Wait for all nodes to either answer or timeout
+	wg.Wait()
+
+	// Set self to leader if there were no answers (all timeouts)
+	n.Self.IsLeader = !anyAnswers
+
+	// Send a coordinator message to all nodes
+	for _, peer := range n.Peers {
+		peer.Send(MessageTypeCoordinator, "", n.Timeout)
+	}
+
+}
+
+type NetworkPeer struct {
+	Identifier int
+	IsLeader   bool
+	PeerNode
+}
 
 type PeerNode struct {
 	Host string
