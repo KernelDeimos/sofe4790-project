@@ -115,16 +115,26 @@ func RunApplication(host string, port, id int, leader int) {
 
 	n := network.NewDefaultNetwork(host, id, port, false)
 
+	nAdded := 0
+
 	// Generate list of peer nodes
 	for _, peer := range config.Peers {
-		if peer.Host == host && peer.Port == port {
+		if peer.ID == id {
 			continue // Do not include self as a peer
 		}
 
 		n.AddPeer(network.NewPeer(peer.Host, peer.Port, peer.ID))
+		nAdded++
 	}
 
+	logrus.Infof("Added %d peers to network list.", nAdded)
+
 	n.SetLeader(leader)
+	if leader == id {
+		logrus.Info("This is the leader node.")
+	} else {
+		logrus.Info("This is a gateway node.")
+	}
 
 	builder := ApplicationBuilder{&config}
 	app := builder.Build()
