@@ -40,6 +40,10 @@ func NewDefaultNetwork(host string, id, port int, leader bool) *Network {
 	}
 }
 
+func (n *Network) AddPeer(peer NetworkPeer) {
+	n.Peers = append(n.Peers, peer)
+}
+
 func (n *Network) StartElection() {
 	n.ElectionState = true
 
@@ -97,6 +101,15 @@ type NetworkPeer struct {
 	Identifier int
 	IsLeader   bool
 	PeerNode
+}
+
+func NewPeer(host string, port, id int) NetworkPeer {
+	return NetworkPeer{
+		id, false, PeerNode{
+			Host: host,
+			Port: port,
+		},
+	}
 }
 
 type PeerNode struct {

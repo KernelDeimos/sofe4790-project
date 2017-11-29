@@ -2,6 +2,7 @@ package singlenode
 
 import (
 	"io/ioutil"
+	"strconv"
 	"sync"
 
 	"github.com/KernelDeimos/sofe4790/network"
@@ -112,28 +113,24 @@ func RunApplication(host string, port, id int) {
 		panic(err)
 	}
 
+	n := network.NewDefaultNetwork(host, id, port, false)
+
 	// Generate list of peer nodes
-	peers := []network.PeerNode{}
 	for _, peer := range config.Peers {
 		if peer.Host == host && peer.Port == port {
 			continue // Do not include self as a peer
 		}
 
-		peerNode := network.PeerNode{
-			Host: peer.Host,
-			Port: peer.Port,
-		}
-		peers = append(peers, peerNode)
+		n.AddPeer(network.NewPeer(peer.Host, peer.Port, peer.ID))
 	}
 
 	builder := ApplicationBuilder{&config}
 	app := builder.Build()
 
 	r := gin.Default()
-	n := network.NewDefaultNetwork("127.0.0.1", 1, 21337, false)
 	n.Attach(r)
 
 	app.Start()
 
-	r.Run(":21337")
+	r.Run(":" + strconv.Itoa(port))
 }

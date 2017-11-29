@@ -19,6 +19,7 @@ type ConfigEndpoints struct {
 }
 
 type ConfigPeer struct {
+	ID   int    `yaml:"id"`
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
 }
