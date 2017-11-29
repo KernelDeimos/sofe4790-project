@@ -45,6 +45,12 @@ func (n *Network) AddPeer(peer NetworkPeer) {
 }
 
 func (n *Network) SetLeader(leaderID int) {
+	// Clear the IsLeader attribute of any nodes who are currently a leader
+	for _, peer := range n.Peers {
+		peer.IsLeader = false
+	}
+	n.Self.IsLeader = false
+
 	if n.Self.Identifier == leaderID {
 		n.Self.IsLeader = true
 	} else {
@@ -63,11 +69,6 @@ func (n *Network) StartElection() {
 	wg := &sync.WaitGroup{}
 	anyAnswers := false
 
-	// Clear the IsLeader attribute of any nodes who are currently a leader
-	for _, peer := range n.Peers {
-		peer.IsLeader = false
-	}
-
 	// Send an election message to all nodes with a higher identifier
 	for _, peer := range n.Peers {
 		go func() {
@@ -85,7 +86,9 @@ func (n *Network) StartElection() {
 	wg.Wait()
 
 	// Set self to leader if there were no answers (all timeouts)
-	n.Self.IsLeader = !anyAnswers
+	n.SetLeader(n.Self.Identifier)
+
+	n.ElectionState = false
 
 	if n.Self.IsLeader {
 		// Send a coordinator message to all nodes
