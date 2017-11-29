@@ -99,7 +99,7 @@ func (builder *ApplicationBuilder) attachTriggers(
 	}
 }
 
-func RunApplication() {
+func RunApplication(host string, port, id int) {
 	var err error
 
 	configBytes, err := ioutil.ReadFile("config.yml")
@@ -110,6 +110,20 @@ func RunApplication() {
 	err = yaml.Unmarshal(configBytes, &config)
 	if err != nil {
 		panic(err)
+	}
+
+	// Generate list of peer nodes
+	peers := []network.PeerNode{}
+	for _, peer := range config.Peers {
+		if peer.Host == host && peer.Port == port {
+			continue // Do not include self as a peer
+		}
+
+		peerNode := network.PeerNode{
+			Host: peer.Host,
+			Port: peer.Port,
+		}
+		peers = append(peers, peerNode)
 	}
 
 	builder := ApplicationBuilder{&config}

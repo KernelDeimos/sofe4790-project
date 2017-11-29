@@ -3,6 +3,7 @@ package singlenode
 import "github.com/KernelDeimos/sofe4790/configobjects"
 
 type Config struct {
+	Peers     []ConfigPeer    `yaml:"peers"`
 	Sources   ConfigSources   `yaml:"sources"`
 	Endpoints ConfigEndpoints `yaml:"endpoints"`
 	Triggers  []ConfigTrigger `yaml:"triggers"`
@@ -15,6 +16,11 @@ type ConfigSources struct {
 type ConfigEndpoints struct {
 	Appendlog []ConfigEndAppendLog `yaml:"appendlog"`
 	Tweet     []ConfigEndTweet     `yaml:"tweet"`
+}
+
+type ConfigPeer struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 /*
