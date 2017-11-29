@@ -44,6 +44,19 @@ func (n *Network) AddPeer(peer NetworkPeer) {
 	n.Peers = append(n.Peers, peer)
 }
 
+func (n *Network) SetLeader(leaderID int) {
+	if n.Self.Identifier == leaderID {
+		n.Self.IsLeader = true
+	} else {
+		for i := range n.Peers {
+			if n.Peers[i].Identifier == leaderID {
+				n.Peers[i].IsLeader = true
+				break
+			}
+		}
+	}
+}
+
 func (n *Network) StartElection() {
 	n.ElectionState = true
 

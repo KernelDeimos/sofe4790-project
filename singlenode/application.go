@@ -100,7 +100,7 @@ func (builder *ApplicationBuilder) attachTriggers(
 	}
 }
 
-func RunApplication(host string, port, id int) {
+func RunApplication(host string, port, id int, leader int) {
 	var err error
 
 	configBytes, err := ioutil.ReadFile("config.yml")
@@ -123,6 +123,8 @@ func RunApplication(host string, port, id int) {
 
 		n.AddPeer(network.NewPeer(peer.Host, peer.Port, peer.ID))
 	}
+
+	n.SetLeader(leader)
 
 	builder := ApplicationBuilder{&config}
 	app := builder.Build()
