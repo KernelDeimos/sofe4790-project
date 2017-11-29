@@ -12,7 +12,7 @@ type StreamSource struct {
 	Stream *os.File
 }
 
-func (src *StreamSource) Start(name string, e *Emitter) (*sync.WaitGroup, error) {
+func (src *StreamSource) Start(name string, c Collector) (*sync.WaitGroup, error) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
@@ -32,7 +32,7 @@ func (src *StreamSource) Start(name string, e *Emitter) (*sync.WaitGroup, error)
 			data := map[string]string{}
 			data["payload"] = input
 
-			e.Emit(Event{
+			c.Collect(Event{
 				Key:  name,
 				Data: data,
 			})

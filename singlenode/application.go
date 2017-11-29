@@ -11,7 +11,7 @@ import (
 )
 
 type Source interface {
-	Start(name string, e *Emitter) (*sync.WaitGroup, error)
+	Start(name string, c Collector) (*sync.WaitGroup, error)
 }
 
 type Endpoint interface {
@@ -22,7 +22,8 @@ type Endpoint interface {
 type Application struct {
 	Sources   map[string]Source
 	Endpoints map[string]Endpoint
-	emitter   *Emitter
+	emitter   *Emitter  //struct
+	collector Collector //interface
 }
 
 func (app *Application) Start() {
@@ -33,7 +34,7 @@ func (app *Application) Start() {
 		}
 	}
 	for name, src := range app.Sources {
-		_, err := src.Start(name, app.emitter)
+		_, err := src.Start(name, app.collector)
 		if err != nil {
 			logrus.Error(err)
 		}
@@ -50,11 +51,13 @@ func (builder *ApplicationBuilder) Build() *Application {
 
 	emitter := NewEmitter()
 
+	collector := &HandleHereCollector{emitter}
+
 	builder.buildSources(sources)
 	builder.buildEndpoints(endpoints)
 	builder.attachTriggers(emitter, endpoints)
 
-	return &Application{sources, endpoints, emitter}
+	return &Application{sources, endpoints, emitter, collector}
 }
 
 func (builder *ApplicationBuilder) buildSources(sources map[string]Source) {
