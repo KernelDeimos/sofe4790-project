@@ -52,9 +52,11 @@ func (n *Network) StartElection() {
 	// Set self to leader if there were no answers (all timeouts)
 	n.Self.IsLeader = !anyAnswers
 
-	// Send a coordinator message to all nodes
-	for _, peer := range n.Peers {
-		peer.Send(MessageTypeCoordinator, "", n.Timeout)
+	if n.Self.IsLeader {
+		// Send a coordinator message to all nodes
+		for _, peer := range n.Peers {
+			peer.Send(MessageTypeCoordinator, "", n.Timeout)
+		}
 	}
 
 }
