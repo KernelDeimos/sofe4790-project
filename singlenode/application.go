@@ -3,8 +3,8 @@ package singlenode
 import (
 	"io/ioutil"
 	"sync"
-	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
 	"gopkg.in/yaml.v2"
@@ -116,5 +116,15 @@ func RunApplication() {
 
 	app.Start()
 
-	time.Sleep(time.Second * 60)
+	r := gin.Default()
+
+	r.GET("/_event/:data", func(c *gin.Context) {
+		//
+	})
+
+	r.GET("/_elect/:type/:message", func(c *gin.Context) {
+		//
+	})
+
+	r.Run(":21337")
 }
