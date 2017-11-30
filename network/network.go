@@ -38,7 +38,7 @@ func NewDefaultNetwork(host string, id, port int, leader bool) *Network {
 
 	return &Network{
 		Self:         self,
-		ElectionWait: &sync.WaitGroup{},
+		ElectionWait: nil,
 		Peers:        []NetworkPeer{},
 		Timeout:      time.Second * 10,
 		Messages:     make(chan interface{}, 2000),
@@ -59,6 +59,7 @@ func (n *Network) StartService() {
 					n.Messages <- data
 					n.StartElection()
 					n.ElectionWait.Wait()
+					n.ElectionWait = nil
 				}
 			}
 		}
@@ -96,6 +97,7 @@ func (n *Network) SendToLeader(data interface{}) bool {
 }
 
 func (n *Network) StartElection() {
+	n.ElectionWait = &sync.WaitGroup{}
 	n.ElectionWait.Add(1)
 
 	wg := &sync.WaitGroup{}
@@ -148,7 +150,9 @@ func (n *Network) Attach(r *gin.Engine, onEvent func(data interface{})) {
 			}
 			n.SetLeader(leaderID)
 			spew.Dump(n.Peers)
-			n.ElectionWait.Done()
+			if n.ElectionWait != nil {
+				n.ElectionWait.Done()
+			}
 		case MessageTypeEvent:
 			jsonString := c.Param("data")
 			onEvent(jsonString)
