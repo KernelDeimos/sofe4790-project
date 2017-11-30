@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/KernelDeimos/sofe4790/network"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -47,13 +49,13 @@ type ApplicationBuilder struct {
 	config *Config
 }
 
-func (builder *ApplicationBuilder) Build() *Application {
+func (builder *ApplicationBuilder) Build(n *network.Network) *Application {
 	sources := map[string]Source{}
 	endpoints := map[string]Endpoint{}
 
 	emitter := NewEmitter()
 
-	collector := &HandleHereCollector{emitter}
+	collector := &DelegateToPeerCollector{emitter, n}
 
 	builder.buildSources(sources)
 	builder.buildEndpoints(endpoints)
@@ -120,7 +122,7 @@ func RunApplication(host string, port, id int, leader int) {
 	// Generate list of peer nodes
 	for _, peer := range config.Peers {
 		if peer.ID == id {
-			continue // Do not include self as a peer
+			//continue // Do not include self as a peer
 		}
 
 		n.AddPeer(network.NewPeer(peer.Host, peer.Port, peer.ID))
@@ -137,11 +139,14 @@ func RunApplication(host string, port, id int, leader int) {
 	}
 
 	builder := ApplicationBuilder{&config}
-	app := builder.Build()
+	app := builder.Build(n)
 
 	r := gin.Default()
-	n.Attach(r)
+	n.Attach(r, func(data interface{}) {
+		spew.Dump(data)
+	})
 
+	go n.StartService()
 	app.Start()
 
 	r.Run(":" + strconv.Itoa(port))
